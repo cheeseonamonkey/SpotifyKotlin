@@ -1,0 +1,16 @@
+# Gradle files
+.gradle/
+build/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Node.js files
+node_modules/
+
+# Compiled JavaScript files
+lib/
+dist/

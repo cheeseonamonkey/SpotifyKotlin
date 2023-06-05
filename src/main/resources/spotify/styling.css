@@ -1,0 +1,332 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bona+Nova&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap');
+/* font-family: 'Rubik', sans-serif; */
+
+html, html * {
+  font-display: swap;
+}
+
+input.searchOptionsChecks {
+    font-family: 'Bona Nova', serif;
+
+}
+
+button {
+
+    font-family: 'Rubik', sans-serif;
+    font-size: 90%;
+}
+.searchOptionsChecks + label {
+    margin-top: 2px;
+    margin-left: 2px;
+    font-size: 0.73em;
+}
+html {
+
+font-size: 1.19rem;
+line-height: 1.0;
+
+/*  font-size:clamp( 20px, calc(2vw + 8px), 30px )  */
+
+}
+
+.slickPage {
+    width: 100%;
+}
+.infobar {
+display: flex; flex-direction: row; align-items: end; border-bottom: 5px solid black;
+padding: 0; margin: 0;
+}
+.userimagename {
+    padding: 0; margin: 0; width: 8em; display: inline; float: left;
+}
+ul.slickDots li{
+    color: red;
+}
+ul.slickDots li .slick-active{
+    color: blue;
+}
+
+
+input {
+    font-family: 'Barlow', sans-serif;
+}
+h1 {
+    font-size: clamp( 36px, calc(2vw + 1.23em), 69px );
+}
+h2 {
+    font-size: clamp( 28px, calc(2vw + 1.2em), 64px );
+}
+h3 {
+    font-size: clamp( 26px, calc(1.15vw + 1.2em), 60px );
+}
+h4 {
+    font-size: clamp( 18px, calc(0.8vw + 1em), 36px );
+}
+h5 {
+    font-size: clamp( 17px, calc(0.5vw + 1em), 24px );
+}
+h6 {
+    font-size: clamp( 16px, calc(0.4vw + 1em), 20px );
+}
+
+button {
+    font-size: 1.23rem;
+    padding: 1.18vw;
+    margin: 0.33vw;
+
+}
+
+
+
+body {
+    margin: 0;
+    max-width: 666px;
+    padding: 0.66vw;
+}
+
+h1, h2, h3, h4 {
+
+font-family: 'Inter', sans-serif;
+
+ text-shadow: 1px 1px 3px rgba(11,55,9,0.25);
+
+    margin-block-start: 0.35em;
+    margin-block-end: 0.2em;
+
+    margin-left:    0.8vw;
+}
+h5, h6, h4 {
+
+    margin-block-start: 0.1em;
+    margin-block-end: 0;
+
+    margin-left:    0.6vw;
+}
+
+figure {
+  float: left;
+  width: 35%;
+  text-align: center;
+  font-style: italic;
+  border: thin black solid;
+  margin: 0;
+  padding: 0;
+}
+.errorMessage {
+    color: red;
+    font-weight: bold;
+    font-size: 1.15em;
+}
+
+div{
+    margin: 0.2vw;
+    padding: 0.1vw;
+}
+
+.flexRowHolder {
+
+    display: flex;
+    flex-wrap: wrap-reverse;
+
+}
+div.loginDiv button {
+    cursor: pointer;
+}
+
+div.card ul {
+    pointer-events: none;
+}
+div.card ul.features li span {
+    line-height: 0.7;
+}
+div.card ul.features li {
+    font-size: 0.55em; padding: 1px 0 0 0; margin: unset; display: block; border-bottom: 0.05em solid rgba(60,66,60,0.3); border-right: 1px solid rgba(88,99,88,0.2);
+    box-shadow: inset 1px 1px 0 5px rgba(1,44,1,0.035);
+}
+
+div.loginDiv h3, div.loginDiv h2 {
+    color: #010;
+    text-shadow: 3px 3px 5px rgba(1,55,2,0.7);
+}
+div.loginDiv small { width: 100%; letter-spacing: -0.55px; text-align: right;float:right;}
+div.loginDiv button {
+
+    float: right;
+}
+
+div.loginDiv h1, div.loginDiv h2, div.loginDiv h3 {
+    float: right;
+    text-align: right;
+}
+div.loginDiv.searchDiv h3 { margin-right: 0.2em; }
+
+div.loginDiv.searchDiv {
+flex: 1;
+    flex-grow: 2.1;
+    padding-right: 0.3em;
+    padding-left: 0.1em;
+}
+div.loginDiv  {
+min-width: 210px;
+    box-shadow:
+        1px 1px 1px 1px rgba(1,22,1,0.25),
+        inset 2px 2px 1px 3px rgba(5,36,5,0.22),
+        inset 5px 5px 5px 13px rgba(27,66,30,0.14);
+
+padding-bottom: 30px;
+flex: 1;
+flex-shrink: 1.1;
+display: inline;
+background-color: rgba(0,55,0,0.15);
+    border: 1px solid rgba(11,11,11,0.8);
+    float: left;
+    padding: 2px;
+    padding-top: 0.4em;
+    padding-bottom: 2.35em;
+    margin: 2px;
+
+}
+
+small {
+    font-family: Times;
+    font-size: 55%;
+    font-style: italic;
+    margin-left: 1em;
+}
+
+li {
+    font-size: smaller;
+}
+
+.profileImage {
+
+    width: 7.5em;
+
+    min-width: 5vw;
+    max-width: 33vw;
+
+    height: auto;
+
+    margin: -1vw;
+    margin-left:    1vw; /* to match the display name */
+    margin-b: -1vw;
+
+    padding: 0;
+    margin-bottom: inherit;
+}
+.card span {
+    pointer-events: none;
+}
+.card span,
+card i {
+    pointer-events: none;
+}
+
+
+.card {
+    margin: 0;  margin-top: 0.15em; margin-bottom: 0.15em; padding: 0.2em; border: 0.1em solid rgba(11,11,22,0.8);
+    overflow: clip;
+    background-color: rgba(255,255,251,0.2);
+    box-shadow:
+        1px 1px 1px 1px rgba(11,11,11,0.3),
+        inset 3px 3px 0 3px rgba(254,255,251,0.1);
+
+}
+.card .cardTitle {
+
+     letter-spacing: -0.015em;
+
+    white-space: nowrap; font-weight:bold;  max-width: 85%;  text-overflow: ellipsis;  overflow-x: scroll;
+    text-shadow: 1px 1px 0 rgba(1,1,1,0.36);
+
+    text-decoration-line: underline;
+    text-decoration-color: rgba(55,38,69,0.8);
+
+}
+.card:hover,
+.card:focus,
+.card:active {
+    background-color: rgba(44,55,88,0.11);
+}
+
+
+
+.card .cardSubTitle {
+    float:right; text-align: right; font-size: 0.7em; white-space: nowrap;
+}
+
+.imgToolsMenuIcon {
+    box-shadow: 1px 1px 1px 0 rgba(33,33,33,0.15);
+    cursor: pointer;
+}
+
+.divToolsMenuPopup li{
+    box-shadow: inset -1px -1px 0 1px rgba(4,5,8,0.1);
+    cursor: pointer;
+}
+
+.divToolsMenuPopup li:hover,
+.divToolsMenuPopup li:focus,
+.divToolsMenuPopup li:active{
+    box-shadow: inset 1px 1px 1px 2px rgba(4,5,8,0.25);
+
+}
+
+.imgToolsMenuIcon:hover,
+.imgToolsMenuIcon:focus,
+.imgToolsMenuIcon:active {
+    box-shadow: inset 1px 1px 1px 2px rgba(4,5,8,0.15);
+}
+
+.card .cardDetail b {
+    color: #262226;
+    margin-right: 3px;
+    font-size: 1.05em;
+}
+
+
+
+.card .cardDetail {
+        color: #423842;
+        letter-spacing: -0.08em;
+        font-size: 0.62em;
+
+        margin-left: 1em;
+        font-family:  "Montserrat", serif ;
+
+    text-overflow: ellipsis;
+
+
+
+
+}
+
+
+
+
+/*
+body {
+  background: linear-gradient(-46deg, #96dd7d, #a5e38f );
+  background-size: 400% 400%;
+  animation: gradient 5s ease infinite;
+  height: 100vh;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+*/
