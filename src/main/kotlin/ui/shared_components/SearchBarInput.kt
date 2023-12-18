@@ -23,7 +23,7 @@ fun TagConsumer<HTMLElement>.searchBarInput() {
             val eventkey = ev.asDynamic().key
 
             if (eventkey.toString().contains("Enter", true)) {
-                //TODO: enter to search?
+                //TODO: enter to search
                 console.log(eventkey.toString())
                 window.location.href = window.location.origin + "/spotify/search?q=${this.value}&type=playlists"
             } else {

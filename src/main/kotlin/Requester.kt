@@ -1,21 +1,27 @@
-import kotlin.js.*
-import misc.js.Cookie
+import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.await
+import kotlinx.coroutines.delay
+import kotlinx.html.dom.append
+import kotlinx.html.li
+import kotlinx.html.*
+import kotlinx.html.style
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromJsonElement
-
 import misc.TimeLength
-import models.*
+import misc.js.Cookie
+import models.AudioFeatures
+import models.Playlist
+import models.Profile
+import models.Track
 import models.musicalfeatures.MusicalFeatures
-
+import org.w3c.dom.HTMLUListElement
 import org.w3c.fetch.Headers
 import org.w3c.fetch.RequestInit
-
-
+import org.w3c.fetch.Response
+import kotlin.coroutines.suspendCoroutine
 
 class Requester(
     val authCode :String? = run {
@@ -54,7 +60,51 @@ class Requester(
         }
     }
 
+    suspend fun likeTracks(trackids :List<String>) : Boolean {
+        var allSucceeded = true;
 
+        suspend fun List<String>.sanitizeDuplicates() :List<String> {
+
+            // remove already liked songs
+            val lstSanitized = mutableListOf<String>()
+
+            // get liked songs
+            val likesMeLikesMeNot = getIsLiked(this.toMutableList())
+
+            for(i in 0 until lstSanitized.size){
+                if(likesMeLikesMeNot[i] == false) //not already liked
+                    lstSanitized.add(this[i]);
+            }
+
+            //also remove nulls
+            lstSanitized.forEach {
+                if(it == undefined || it == null || it == "null")
+                    lstSanitized.remove(it)
+            }
+
+            console.log("${lstSanitized.size} songs are \"unliked\"")
+            return lstSanitized
+        }
+
+        val trackidsSanitized = trackids.sanitizeDuplicates()
+
+        trackidsSanitized.chunked(50).forEach { chunkedIds ->
+            runCatching {
+
+                val r = window.fetch("https://api.spotify.com/v1/me/tracks", RequestInit().apply {
+                    method = "PUT"
+                    headers = Headers().apply { append("Authorization", "Bearer $authCode") }
+                    body = JSON.stringify(chunkedIds)
+                }).await()
+                if(r.status.toInt() != 200)
+                    allSucceeded = false;
+                delay(5)
+            }.onFailure { console.error(it.message) }
+
+        }
+
+        return allSucceeded
+    }
 
 
     suspend fun getMusicalFeatures(trackid :String) : MusicalFeatures {
@@ -121,6 +171,111 @@ class Requester(
         return listout
     }
 
+    suspend fun getMyPlaylists() :List<Playlist>{
+
+    var listout = mutableListOf<Playlist>()
+
+    var pageurl = "https://api.spotify.com/v1/me/playlists?limit=50"
+    var looping = true
+
+    while(looping) {
+
+            window.fetch(pageurl, reqSettings)
+                .then { r -> r.json() }
+                .then { j ->
+
+
+                    val pll = Playlist.listFromDynamic(j)
+
+                    listout.addAll(pll)
+
+                    if (j.asDynamic().next == null)
+                        looping = false
+                    else
+                        pageurl = j.asDynamic().next
+
+
+                }.await()
+            delay(5)
+        }
+
+
+    return listout
+}
+
+    suspend fun getIsLiked(trackids:MutableList<String>): List<Boolean> {
+
+        trackids.forEach {
+            if (it == undefined || it == null || it == "null")
+                trackids.remove(it)
+        }
+
+        val lstOut = mutableListOf<Boolean>()
+
+
+
+        trackids.chunked(49).forEach { chunkedIds ->
+            try {
+                val trackIdsString = chunkedIds.joinToString(",")
+                val url = "https://api.spotify.com/v1/me/tracks/contains?ids=${trackIdsString}".replace(",", "%2C")
+                val lstOutchunk = getAsObject<List<Boolean>>(url, reqSettings)
+                lstOut.addAll(lstOutchunk)
+            }catch(ex:Exception){ console.error(ex.message) }
+        }
+        return lstOut
+    }
+
+    suspend fun getMyLikedTracks(progressBlock:(iProg:Int?, iTotal:Int?, iWasCached:Boolean)->Any?) :List<Track> {
+
+        val cache = window.caches.open("likedTracks").await()
+
+        var listout = mutableListOf<Track>()
+
+        var pageurl = "https://api.spotify.com/v1/me/tracks?limit=50&offset=0"
+        var looping = true
+
+        while (looping) {
+
+            val cachedResponse = (cache.match(pageurl).await()) as Response?
+            // Check if response is already cached
+            val j = if (cachedResponse != null) {
+
+                //is cached
+                val j = cachedResponse.json().await()
+                if(j.asDynamic().offset == undefined) {
+                    console.log("cache corrupt - deleting it.")
+
+                    break;
+                }
+                console.log("got cached - ${j.asDynamic().offset} - ${j.asDynamic().total}")
+                progressBlock(j.asDynamic().offset, j.asDynamic().total, true)
+                listout.addAll(Track.listFromDynamic(j))
+
+                j //return
+            } else {
+
+                // is not cached - make new request (and cache response)
+                val response = window.fetch(pageurl, reqSettings).await()
+                cache.put(pageurl, response.clone())
+                val j = response.json().await()
+                console.log("cached http - ${j.asDynamic().offset} - ${j.asDynamic().total}")
+                progressBlock(j.asDynamic().offset, j.asDynamic().total, false)
+                listout.addAll(Track.listFromDynamic(j))
+                delay(15)
+                j //return
+            }
+
+            if (j.asDynamic().next == null)
+                looping = false
+            else
+                pageurl = j.asDynamic().next
+
+
+
+
+        }
+        return listout
+    }
 
     suspend fun getUsersPlaylists(uid :String) :List<Playlist> {
 
@@ -131,7 +286,7 @@ class Requester(
 
         while(looping) {
             window.fetch(pageurl, reqSettings)
-                .then { r -> r.json() }
+                .then { r -> console.log(r); r.json(); }
                 .then { j ->
 
                     val pll = Playlist.listFromDynamic(j)
@@ -146,6 +301,7 @@ class Requester(
 
 
                 }.await()
+            delay(10)
         }
         return listout
     }
@@ -156,7 +312,9 @@ class Requester(
             .then { j -> Playlist.fromDynamic(j) }.await()
     }
 
-    suspend fun getPlaylistTracks(tracksUrl :String) : List<Track> {
+    suspend fun getPlaylistTracks(tracksUrl :String, progressBlock:(iProg:Int?, iTotal:Int?, iWasCached:Boolean)->Any? = {a,b,c->} ): List<Track> {
+
+        val cache = window.caches.open("PlaylistTracks").await()
 
         var listout = mutableListOf<Track>()
 
@@ -164,19 +322,35 @@ class Requester(
         var looping = true
 
         while (looping) {
-            val a = window.fetch(pageurl, reqSettings)
-                .then { r -> r.json() }
-                .then { j ->
-                    val tl = Track.listFromDynamic(j)
-                    listout.addAll(tl)
+            val cachedResponse = (cache.match(pageurl).await()) as Response?
+            // Check if response is already cached
+            val j = if (cachedResponse != null) {
+                //is cached
+                val j = cachedResponse.json().await()
+                console.log("got cached - ${j.asDynamic().offset} - ${j.asDynamic().total}")
+                progressBlock(j.asDynamic().offset, j.asDynamic().total, true)
+                listout.addAll(Track.listFromDynamic(j))
 
-                    if (j.asDynamic().next == null)
-                        looping = false
-                    else
-                        pageurl = j.asDynamic().next
-                }.await()
+                j //return
+            } else {
+                // is not cached - make new request (and cache response)
+                val response = window.fetch(pageurl, reqSettings).await()
+                cache.put(pageurl, response.clone())
+                val j = response.json().await()
+                console.log("cached http - playlist tracks;  ${j.asDynamic().offset}-${j.asDynamic().total}")
+                progressBlock(j.asDynamic().offset, j.asDynamic().total, false)
+                listout.addAll(Track.listFromDynamic(j))
+
+                delay(8)
+
+                j //return
+            }
+            if (j.asDynamic().next == null)
+                looping = false
+            else
+                pageurl = j.asDynamic().next
+
         }
-
         return listout
     }
 

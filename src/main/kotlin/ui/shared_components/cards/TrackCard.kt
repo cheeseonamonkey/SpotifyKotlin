@@ -19,6 +19,8 @@ fun DIV.trackCard(t: Track) {
     }
 
     span("cardTitle") { +t.name }
+    if(t.similarity != null)
+        span() { br(); +"CosSim: ${t.similarity!!.toString().slice(0..5)}%"; }
 
     span("cardSubTitle") { +t.artists }
 

@@ -4,16 +4,14 @@ package ui.shared_components
 
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.html.*
-import kotlinx.html.dom.prepend
+import kotlinx.html.dom.append
 import kotlinx.html.js.*
 import kotlinx.html.js.onTouchEndFunction
 import kotlinx.html.js.onTouchStartFunction
-import learning.embedding.Model
+import learning.embedding.sentenceencoder.Model
+import learning.embedding.cosSimilarityTo
 import models.Track
 import org.w3c.dom.*
 import ui.menus.toolsMenus.*
@@ -26,16 +24,16 @@ fun <T> TagConsumer<HTMLElement>.dataListView(
 ) {
 
     div("dataViewHolder") {
-        dataViewTitleBar( dataList, title)
+        dataViewTitleBar(dataList, title, cardEach)
         dataViewInsetList(dataList, cardEach)
     }
 }
 
-private fun <T> TagConsumer<HTMLElement>.dataViewTitleBar(dataList:Collection<T>, title: String) {
+private fun <T> TagConsumer<HTMLElement>.dataViewTitleBar(dataList:Collection<T>, title: String, cardEach: DIV.(cardData: T) -> Unit) {
 
     div("divDataViewTitle") {
-        style = "background-color: rgba(88,88,105,0.25); text-align: right; padding:  .1em .1em 0 .1em; margin: 0.1em 4px 1px 3px;" +
-                "border: 1px solid rgba(5,5,5,0.25); border-bottom: none;"
+        style = "cursor: grab; background-color: rgba(88,133,91,0.25); text-align: right; padding: .1em .1em 0 .1em; margin: 0.1em 4px 1px 3px;" +
+                "border: 2.5px solid rgba(5,5,5,0.65); border-bottom: none; box-shadow: .5px .4px .7px 1.9px rgba(1,1,1,0.15);"
         h4("h4DataViewTitle") {
             style = """ text-align: left; display: inline; float: left; max-width: 60%; height: 100%; margin: 0 3% 0 3%;"""
             +title
@@ -51,58 +49,93 @@ private fun <T> TagConsumer<HTMLElement>.dataViewTitleBar(dataList:Collection<T>
                 }
             }.render(this)
 
+
             // embedding:
+            if(dataList.first() is Track)
             ToolsButton( "btnEmbedding", "/spotify/res/speech.png","embedding") {
                 GlobalScope.launch {
-                    console.log("\n btnEmbedding\n----------------------")
 
                     val model = Model.loadModel()
 
-                    if (dataList.first() is Track) {
-                        lateinit var embedProg : HTMLProgressElement
+                            document.querySelector(".divSecondary .h4DataViewTitle")?.remove()
+                            document.querySelector(".divSecondary")?.append {
+                            div {
+                                style = "max-width: 55%;  margin: 0.04em; padding: 0.08em; display: inline-block;  border: 1px thin black;"
+                                span {
+                                    style = "float: left; font-family: sarif;"
+                                    i { style = "font-size: 75%;"; +"semantic title searching" }
+                                    br()
+                                    b { +"find songs about:" }
 
-                        document.querySelector(".dataViewHolder")?.prepend {
-                            embedProg = progress {
-                                span { +"title embedding progress" }
-                                style = "height: 1em; width: 85%; padding: 0;"
-                                value = "0"
-                                max   = ((dataList.size / 7.0).toInt()).floorDiv(1).toString()
-                            }
-                        }
-
-                        dataList.toList().chunked(7).forEach { chunk ->
-
-                            chunk.forEach { itt ->
-                                GlobalScope.async {
-                                    val titleEmbedded = model.embed((itt as Track).name)
-                                    (itt as Track).embedding = titleEmbedded
-                                }.await()
-                            }
-                            embedProg.value += 1;
-                        }
-                        embedProg.remove()
-                            document.querySelector(".dataViewHolder .h4DataViewTitle")?.remove()
-                        document.querySelector(".dataViewHolder")?.prepend {
-                            span { +"semantic title search"; style = "float: left;"; }
-
-                            var timeout :Int? = null
-
-                            val inputEmbeddingSearch = input {
-                                style = "float: left;"
-                                onChangeFunction = { ev->
-                                    if(timeout != null)
-                                        window.clearTimeout(timeout!!)
-                                    timeout = window.setTimeout({
-                                        console.log("embedding query: '${ev.target.asDynamic().value}'")
-                                    },250)
                                 }
+
+                                val timeouts: MutableList<Int> = mutableListOf<Int>()
+                                input {
+
+                                    style = "float: left; font-size: 120%; line-height: 1.3em;"
+                                    onKeyUpFunction = { ev ->
+                                        if (timeouts.size > 0)
+                                            runCatching { timeouts.forEach { timeOutID -> window.clearTimeout(timeOutID) } }
+
+                                        timeouts.add(window.setTimeout({
+                                            GlobalScope.async {
+                                                GlobalScope.async {
+
+
+                                                    val q = "${ev.target.asDynamic().value}"
+                                                    if (q.length < 2)
+                                                        return@async
+
+                                                    //console.log("embedding query..\n   \"$q\"")
+                                                    val queryEmbedded = model.embed(q)
+                                                    //console.log("query embedded: \n   ${queryEmbed}")
+                                                    val tl = dataList.toList() as List<Track>
+
+                                                    val logStr = StringBuilder("\n---------------------------\n")
+                                                    logStr.append(" CosSim% |  Title  \n")
+                                                    tl.forEach { trk ->
+                                                        trk.similarity =
+                                                            (trk.embedding?.cosSimilarityTo(queryEmbedded))?.times(100)
+                                                        logStr.append(
+                                                            " ${
+                                                                (trk.similarity ?: 0.0).toString().slice(0..5)
+                                                                    .padStart(7)
+                                                            }% |  ${trk.name.padEnd(35)} \n"
+                                                        )
+
+                                                    }
+                                                    console.log("\n" + logStr)
+
+
+                                                }.await()
+
+                                                console.log("sorting dataList")
+                                                document.querySelector(".dataViewHolder")?.remove()
+
+                                                delay(300)
+
+                                                document.body?.append {
+                                                    dataListView(
+                                                        title,
+                                                        dataList.toList().sortedBy { (it as Track).similarity }
+                                                            .reversed(),
+                                                        cardEach
+                                                    )
+                                                }
+                                            }
+
+
+                                        }, 1000))
+
+                                    }
+                                }
+                                br { style = "clear: both;" }
                             }
-                            br { style = "clear: both;" }
 
 
                         }
 
-                    }
+
 
                 }
             }.render(this)

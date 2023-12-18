@@ -19,7 +19,7 @@ object AuthPage : IPage {
 
 
         val client_id = "a2d2022d5723447d82620a79ba00a6f5"
-        val scope = "user-read-private user-read-email user-top-read user-read-recently-played"
+        val scope = "user-read-private playlist-read-collaborative user-read-currently-playing user-read-email user-top-read user-read-recently-played user-library-modify user-library-read playlist-modify-private playlist-read-private"
 
 
         //no params - log in

@@ -29,6 +29,10 @@ suspend fun main() {
         "spotify/search" ->
             window.onload = { SearchResultsPage.loadPage() }
 
+        //tools page
+        "spotify/profile/me/liked" ->
+            window.onload = { LikedTracksPage.loadPage() }
+
         //index page
         "" ->
             window.onload = { IndexPage.loadPage() }

@@ -37,7 +37,8 @@ data class Track (
 
 
     var audioFeatures :AudioFeatures? = null
-    var embedding     :Array<Float>?  = null
+    var embedding     :Array<Float>?    = null
+    var similarity    :Double?   = null
 
 
 

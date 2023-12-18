@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.html.*
 import kotlinx.html.dom.append
+
 import misc.TimeLength
 import misc.js.Cookie
 import misc.js.Swiper.htmlTabs
@@ -28,6 +29,9 @@ import ui.shared_components.cards.playlistCard
 object ProfilePage : IInfoViewPage {
 
     override fun loadPage() {
+
+
+
 
 
 
@@ -168,12 +172,3 @@ object ProfilePage : IInfoViewPage {
 
 
 
-    inline fun TagConsumer<HTMLElement>.dataView(user: Profile) {
-
-
-        div {
-
-
-
-        }
-    }
