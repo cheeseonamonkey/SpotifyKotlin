@@ -11,9 +11,13 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
     maven("https://dl.bintray.com/robert-cronin/fortytwoapps")
+
 }
 
 dependencies {
+
+
+
 
     //kotlinx
     implementation("org.jetbrains.kotlinx:kotlinx-html:0.7.2")
@@ -31,8 +35,10 @@ dependencies {
     //csv
     implementation("com.github.doyaaaaaken:kotlin-csv-js:1.8.0")
 
-    //regression math
-    //implementation("org.apache.commons:commons-math3:3.6.1")
+    // cosine similarity
+    implementation(npm("compute-cosine-similarity", "1.0.0"))
+
+
 
 }
 
